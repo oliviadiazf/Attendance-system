@@ -34,6 +34,7 @@ class HomeController extends Controller
         $this->timeZone('Asia/Jakarta');
         $user_id = Auth::user()->id;
         $date = date("Y-m-d");
+
         $cek_absen = Absen::where(['user_id' => $user_id, 'date' => $date])
                             ->get()
                             ->first();
@@ -67,9 +68,9 @@ class HomeController extends Controller
         $this->timeZone('Asia/Jakarta');
         $user_id = Auth::user()->id;
         $date = date("Y-m-d");  //2017-02-01
-        $time_in = new DateTime(); //12:31:20
-        $time_out = new DateTime(); //12:31:20
-        $result = $time_in -> diff($time_out) -> format(date("H:i:s"));
+        $time_in = date("H:i:s"); //12:31:20
+        $time_out = date("H:i:s"); //12:31:20
+
         $note_tugas = $request->note_tugas;
         $note_kendala = $request->note_kendala;
 
@@ -97,12 +98,24 @@ class HomeController extends Controller
             $absen->where(['date' => $date, 'user_id' => $user_id])
                 ->update([
                     'time_out' => $time_out,
-                    'time_total' => $result,
                     'note_tugas' => $note_tugas,
                     'note_kendala' => $note_kendala
             ]);
             return redirect()->back();
         }
+        $hasil = date("H:i:s");
+        $absen->create(['time_total' => $hasil]);
         return $request->all();
+    }
+
+    public function hitung() {
+        $time_in = Absen::where('time_in')->get()->first();
+        $time_out = Absen::where('time_out')->get()->first();
+        $result = Absen::where(['time_in' => $time_in, 'time_out' => $time_out])
+                            ->get()
+                            ->first()
+                            ->date_diff($time_out,$time_in);
+        $hasil = Absen::create(['time_total' => $result]);
+        return $hasil;
     }
 }
