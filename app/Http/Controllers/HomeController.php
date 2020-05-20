@@ -101,21 +101,19 @@ class HomeController extends Controller
                     'note_tugas' => $note_tugas,
                     'note_kendala' => $note_kendala
             ]);
+            $absen->where(['date' => $date, 'user_id' => $user_id, 'time_in' => $time_in, 'time_out' => $time_out])->create([
+                'time_total'=>HomeController::hitung($time_in,$time_out)
+            ]);
             return redirect()->back();
         }
-        $hasil = date("H:i:s");
-        $absen->create(['time_total' => $hasil]);
         return $request->all();
     }
 
     public function hitung() {
+        $result = new Absen;
         $time_in = Absen::where('time_in')->get()->first();
         $time_out = Absen::where('time_out')->get()->first();
-        $result = Absen::where(['time_in' => $time_in, 'time_out' => $time_out])
-                            ->get()
-                            ->first()
-                            ->date_diff($time_out,$time_in);
-        $hasil = Absen::create(['time_total' => $result]);
-        return $hasil;
+        $result = $time_out - $time_in;
+        $result->save();
     }
 }
